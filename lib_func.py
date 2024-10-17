@@ -120,12 +120,18 @@ def convert_forecast_to_df(filename_forecast, t_zone = 'America/New_York'):
         
         full_txt_data_forecast +=  curr_date + '\t' + l + "\n"
 
-    forecast_df = pd.read_csv(io.StringIO(full_txt_data_forecast_EDT), sep = ',', parse_dates = ['dateTime'])
+    forecast_df = pd.read_csv(io.StringIO(full_txt_data_forecast_EDT), sep = ',', parse_dates = ['dateTime'], dtype={'value': str})
     forecast_df = forecast_df.sort_values('dateTime').reset_index()[['dateTime', 'value']]
     #forecast_df.set_index('dateTime', inplace = True)
     forecast_df['numeric_value'] = forecast_df['value'].str.extract(r'(\d+\.\d+)').astype(float)
     forecast_df['night'] = forecast_df.dateTime.apply( lambda row: row.hour <6 or row.hour >= 20 )
     #print(forecast_df)
+    t_zone = pytz.timezone(t_zone) 
+    now_utc = dt.datetime.now(dt.timezone.utc)
+    now_tz = now_utc.astimezone(t_zone)
+    now_tz = dt.datetime.now()
+
+    forecast_df = forecast_df.loc[forecast_df.dateTime > now_tz]
     return forecast_df
 
 def plot_forecast(forecast_df, t_zone = 'America/New_York', night_color = (18/255, 69/255, 89/255), 
@@ -146,6 +152,7 @@ def plot_forecast(forecast_df, t_zone = 'America/New_York', night_color = (18/25
     plt.xticks(rotation=45, ha='right')
     #plt.gca().set_facecolor((24/255, 52/255, 70/255))
     #plt.gca().set_facecolor((.5, .5, .5))
+    plt.ylim(0,10)
     plt.figure(facecolor='white')
     # Show plot
     plt.show()

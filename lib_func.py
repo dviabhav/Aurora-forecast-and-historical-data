@@ -135,24 +135,47 @@ def convert_forecast_to_df(filename_forecast, t_zone = 'America/New_York'):
     return forecast_df
 
 def plot_forecast(forecast_df, t_zone = 'America/New_York', night_color = (18/255, 69/255, 89/255), 
-                  day_color = (241/255, 135/255, 1/255), night_alpha = 1, day_alpha = 0.5):
+                  day_color = (241/255, 135/255, 1/255), night_alpha = 1, day_alpha = 0.5, ret = False):
     forecast_df = convert_forecast_to_df(filename_forecast, t_zone)
     df_night =forecast_df[['dateTime', 'numeric_value', 'night']]
 
-    plt.figure(figsize=(10, 6))
-    alphas = df_night['night'].map({True: night_alpha, False: day_alpha})
-    colors = df_night['night'].map({True: night_color, False: day_color})
-    bars = plt.bar(df_night['dateTime'].dt.strftime('%Y-%m-%d %H:%M:%S'), df_night['numeric_value'], color=colors)
-    for bar, alpha in zip(bars, alphas):
-        bar.set_alpha(alpha)
+    if not ret:
+        print('here')
+        plt.figure(figsize=(10, 6))
+        alphas = df_night['night'].map({True: night_alpha, False: day_alpha})
+        colors = df_night['night'].map({True: night_color, False: day_color})
+        bars = plt.bar(df_night['dateTime'].dt.strftime('%Y-%m-%d %H:%M:%S'), df_night['numeric_value'], color=colors)
+        #bars = plt.bar(df_night['dateTime'].dt.strftime('%Y-%m-%d %H:%M:%S'), df_night['numeric_value'], color=colors)    
+        for bar, alpha in zip(bars, alphas):
+            bar.set_alpha(alpha)
 
-    plt.xlabel('DateTime')
-    plt.ylabel('Numeric Value')
-    plt.title('Bar Plot of Numeric Value with Night Indicator ' + t_zone)
-    plt.xticks(rotation=45, ha='right')
-    #plt.gca().set_facecolor((24/255, 52/255, 70/255))
-    #plt.gca().set_facecolor((.5, .5, .5))
-    plt.ylim(0,10)
-    plt.figure(facecolor='white')
-    # Show plot
-    plt.show()
+        plt.xlabel('DateTime')
+        plt.ylabel('Numeric Value')
+        plt.title('Bar Plot of Numeric Value with Night Indicator ' + t_zone)
+        plt.xticks(rotation=45, ha='right')
+        #plt.gca().set_facecolor((24/255, 52/255, 70/255))
+        #plt.gca().set_facecolor((.5, .5, .5))
+        plt.ylim(0,10)
+        plt.figure(facecolor='white')
+        # Show plot
+        plt.show()
+    else:
+        fig, ax = plt.subplots(figsize=(12, 6))
+        alphas = df_night['night'].map({True: night_alpha, False: day_alpha})
+        colors = df_night['night'].map({True: night_color, False: day_color})
+        #bars = ax.bar(df_night['dateTime'].dt.strftime('%Y-%m-%d %H:%M:%S'), df_night['numeric_value'], color=colors)
+        bars = ax.bar(df_night['dateTime'].dt.strftime('%m-%d %H:%M'), df_night['numeric_value'], color=colors)
+        
+        for bar, alpha in zip(bars, alphas):
+            bar.set_alpha(alpha)
+
+        # Set labels and title
+        ax.set_xlabel('DateTime')
+        ax.set_ylabel('Numeric Value')
+        ax.set_title(f'Bar Plot of Numeric Value with Night Indicator - {t_zone}')
+        ax.tick_params(axis='x', rotation=45)
+
+        # Set plot background
+        ax.set_facecolor('white')
+
+        return fig
